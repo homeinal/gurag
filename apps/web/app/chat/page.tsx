@@ -11,13 +11,13 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [stats, setStats] = useState<{ document_count: number } | null>(null);
+  const [stats, setStats] = useState<{ document_count: number; features?: string[] } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     getChatStats()
       .then(setStats)
-      .catch(() => setStats({ document_count: 0 }));
+      .catch(() => setStats({ document_count: 0, features: [] }));
   }, []);
 
   useEffect(() => {
@@ -55,16 +55,31 @@ export default function ChatPage() {
       <div className="border-b border-gray-200 bg-white px-4 py-3">
         <div className="max-w-3xl mx-auto flex justify-between items-center">
           <div>
-            <h1 className="text-lg font-semibold text-gray-900">RAG 챗봇</h1>
+            <h1 className="text-lg font-semibold text-gray-900">AI 챗봇</h1>
             <p className="text-sm text-gray-500">
-              Arxiv 논문 기반 AI 트렌드 Q&A
+              RAG + arXiv + HuggingFace 통합 검색
             </p>
           </div>
           {stats && (
-            <div className="text-xs text-gray-400">
-              {stats.document_count > 0
-                ? `${stats.document_count}개 문서 인덱싱됨`
-                : "문서 준비 중..."}
+            <div className="flex items-center gap-3 text-xs">
+              <span className="text-gray-400">
+                {stats.document_count > 0
+                  ? `${stats.document_count}개 문서`
+                  : "준비 중..."}
+              </span>
+              {stats.features && stats.features.length > 0 && (
+                <div className="flex gap-1">
+                  {stats.features.includes("mcp_arxiv") && (
+                    <span className="px-1.5 py-0.5 bg-red-100 text-red-600 rounded text-[10px]">arXiv</span>
+                  )}
+                  {stats.features.includes("mcp_huggingface") && (
+                    <span className="px-1.5 py-0.5 bg-yellow-100 text-yellow-600 rounded text-[10px]">HF</span>
+                  )}
+                  {stats.features.includes("rag") && (
+                    <span className="px-1.5 py-0.5 bg-blue-100 text-blue-600 rounded text-[10px]">RAG</span>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -77,26 +92,69 @@ export default function ChatPage() {
             <div className="text-center py-12">
               <div className="text-4xl mb-4">💬</div>
               <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                AI 트렌드에 대해 물어보세요
+                AI에 대해 무엇이든 물어보세요
               </h2>
               <p className="text-gray-500 mb-6">
-                Arxiv 논문을 기반으로 최신 AI 연구 동향을 알려드립니다
+                지식 베이스, arXiv 논문, HuggingFace를 통합 검색합니다
               </p>
-              <div className="flex flex-wrap justify-center gap-2">
-                {[
-                  "Transformer 아키텍처란?",
-                  "최신 LLM 트렌드",
-                  "RAG 시스템 설명해줘",
-                  "Attention mechanism이 뭐야?",
-                ].map((suggestion) => (
-                  <button
-                    key={suggestion}
-                    onClick={() => handleSendMessage(suggestion)}
-                    className="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors"
-                  >
-                    {suggestion}
-                  </button>
-                ))}
+
+              {/* RAG 질문 */}
+              <div className="mb-4">
+                <div className="text-xs text-gray-400 mb-2">개념 질문 (RAG)</div>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {[
+                    "Transformer가 뭐야?",
+                    "BERT와 GPT 차이점",
+                    "RAG 시스템 설명해줘",
+                  ].map((suggestion) => (
+                    <button
+                      key={suggestion}
+                      onClick={() => handleSendMessage(suggestion)}
+                      className="px-3 py-1.5 text-sm bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100 transition-colors"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* MCP 질문 */}
+              <div className="mb-4">
+                <div className="text-xs text-gray-400 mb-2">실시간 검색 (arXiv/HF)</div>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {[
+                    "최신 LLM 논문 찾아줘",
+                    "요즘 뜨는 AI 모델",
+                    "Diffusion 최신 연구",
+                  ].map((suggestion) => (
+                    <button
+                      key={suggestion}
+                      onClick={() => handleSendMessage(suggestion)}
+                      className="px-3 py-1.5 text-sm bg-red-50 text-red-700 rounded-full hover:bg-red-100 transition-colors"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Hybrid 질문 */}
+              <div>
+                <div className="text-xs text-gray-400 mb-2">복합 질문 (RAG + MCP)</div>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {[
+                    "최신 Transformer 연구 동향 설명해줘",
+                    "RLHF 개념과 최근 논문",
+                  ].map((suggestion) => (
+                    <button
+                      key={suggestion}
+                      onClick={() => handleSendMessage(suggestion)}
+                      className="px-3 py-1.5 text-sm bg-purple-50 text-purple-700 rounded-full hover:bg-purple-100 transition-colors"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           ) : (

@@ -6,7 +6,7 @@ from app.services.llm.openai_client import get_embedding
 async def retrieve_documents(
     query: str,
     top_k: int = 5,
-    min_score: float = 0.5,
+    min_score: float = 0.3,
 ) -> List[Dict[str, Any]]:
     """
     쿼리와 유사한 문서 검색
