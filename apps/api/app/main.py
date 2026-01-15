@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from app.config import get_settings
-from app.routers import health, users, feed, chat
+from app.routers import health, users, feed, chat, analytics
 from app.db.neon import init_db
 
 
@@ -40,6 +40,7 @@ app.include_router(health.router, tags=["Health"])
 app.include_router(users.router, prefix="/api/users", tags=["Users"])
 app.include_router(feed.router, prefix="/api/feed", tags=["Feed"])
 app.include_router(chat.router, prefix="/api/chat", tags=["Chat"])
+app.include_router(analytics.router, tags=["Analytics"])
 
 
 @app.get("/")

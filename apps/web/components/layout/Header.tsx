@@ -32,6 +32,12 @@ export function Header() {
             >
               챗봇
             </Link>
+            <Link
+              href="/analytics"
+              className="text-gray-600 hover:text-gray-900 font-medium"
+            >
+              통계
+            </Link>
             {session && (
               <Link
                 href="/settings"

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timezone
 import uuid
+import time
 from typing import List, Dict, Any
 
 from app.db.neon import get_db
@@ -13,6 +14,7 @@ from app.services.rag.embedder import get_document_count
 from app.services.router.llm_router import classify_query, QueryType
 from app.services.mcp.arxiv_client import get_arxiv_client
 from app.services.mcp.huggingface_client import get_huggingface_client
+from app.services.analytics.logger import log_query
 
 router = APIRouter()
 
@@ -120,13 +122,15 @@ async def chat(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    스마트 챗봇 질의 처리 (Phase 2)
+    스마트 챗봇 질의 처리 (Phase 2 + 3)
 
     1. Exact Match 캐시 확인
     2. LLM Router로 쿼리 분류
     3. 분류에 따라 RAG/MCP/Hybrid 처리
     4. 응답 생성 및 캐시 저장
+    5. Analytics 로깅
     """
+    start_time = time.time()
     query = request.query.strip()
 
     if not query:
@@ -137,6 +141,19 @@ async def chat(
 
     if cached:
         response_text, sources = cached
+        latency_ms = int((time.time() - start_time) * 1000)
+
+        # 캐시 히트도 로깅
+        analytics_id = await log_query(
+            db=db,
+            query_text=query,
+            response_text=response_text,
+            source_type="cache",
+            user_id=request.user_id,
+            latency_ms=latency_ms,
+        )
+        await db.commit()
+
         return ChatResponse(
             message=ChatMessageResponse(
                 id=str(uuid.uuid4()),
@@ -146,6 +163,7 @@ async def chat(
                 created_at=datetime.now(timezone.utc),
             ),
             cached=True,
+            analytics_id=analytics_id,
         )
 
     # 2. LLM Router로 쿼리 분류
@@ -208,6 +226,18 @@ async def chat(
     # 5. 캐시 저장
     await save_to_cache(db, query, response_text, all_sources)
 
+    # 6. Analytics 로깅
+    latency_ms = int((time.time() - start_time) * 1000)
+    analytics_id = await log_query(
+        db=db,
+        query_text=query,
+        response_text=response_text,
+        source_type=router_result.query_type.value,
+        user_id=request.user_id,
+        latency_ms=latency_ms,
+    )
+    await db.commit()
+
     return ChatResponse(
         message=ChatMessageResponse(
             id=str(uuid.uuid4()),
@@ -217,6 +247,7 @@ async def chat(
             created_at=datetime.now(timezone.utc),
         ),
         cached=False,
+        analytics_id=analytics_id,
     )
 
 

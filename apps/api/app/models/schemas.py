@@ -90,6 +90,7 @@ class ChatMessageResponse(BaseModel):
 class ChatResponse(BaseModel):
     message: ChatMessageResponse
     cached: bool
+    analytics_id: Optional[str] = None  # Phase 3: 피드백용 ID
 
 
 # Analytics Schemas (Phase 3)

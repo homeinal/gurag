@@ -85,6 +85,7 @@ export interface ChatMessage {
 export interface ChatResponse {
   message: ChatMessage;
   cached: boolean;
+  analytics_id?: string;
 }
 
 export async function sendChatMessage(
@@ -116,4 +117,55 @@ export async function getUserByGoogleId(googleId: string) {
     throw new Error("Failed to fetch user");
   }
   return response.json();
+}
+
+// Analytics API (Phase 3)
+export interface AnalyticsSummary {
+  period_days: number;
+  total_queries: number;
+  source_distribution: Record<string, number>;
+  feedback: {
+    positive: number;
+    negative: number;
+    total: number;
+  };
+  avg_latency_ms: number | null;
+}
+
+export interface PopularQuery {
+  query: string;
+  count: number;
+  positive_feedback: number;
+  negative_feedback: number;
+}
+
+export interface RecentQuery {
+  id: string;
+  query: string;
+  source_type: string;
+  feedback: number | null;
+  latency_ms: number | null;
+  created_at: string;
+}
+
+export interface DashboardData {
+  summary: AnalyticsSummary;
+  popular_queries: PopularQuery[];
+  recent_queries: RecentQuery[];
+  negative_feedback_queries: { query: string; total_count: number; negative_count: number }[];
+}
+
+export async function getAnalyticsDashboard(days: number = 7): Promise<DashboardData> {
+  const response = await fetchWithTimeout(`${API_URL}/api/analytics/dashboard?days=${days}`);
+  if (!response.ok) throw new Error("Failed to fetch dashboard data");
+  return response.json();
+}
+
+export async function submitFeedback(analyticsId: string, feedback: 1 | -1): Promise<void> {
+  const response = await fetchWithTimeout(`${API_URL}/api/analytics/feedback`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ analytics_id: analyticsId, feedback }),
+  });
+  if (!response.ok) throw new Error("Failed to submit feedback");
 }

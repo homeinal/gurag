@@ -6,9 +6,14 @@ import { sendChatMessage, ChatMessage, getChatStats } from "@/lib/api-client";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatMessageBubble } from "@/components/chat/ChatMessage";
 
+interface MessageWithAnalytics {
+  message: ChatMessage;
+  analyticsId?: string;
+}
+
 export default function ChatPage() {
   const { data: session } = useSession();
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<MessageWithAnalytics[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<{ document_count: number; features?: string[] } | null>(null);
@@ -34,13 +39,16 @@ export default function ChatPage() {
       content: query,
       created_at: new Date().toISOString(),
     };
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages((prev) => [...prev, { message: userMessage }]);
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await sendChatMessage(query, session?.user?.id);
-      setMessages((prev) => [...prev, response.message]);
+      setMessages((prev) => [
+        ...prev,
+        { message: response.message, analyticsId: response.analytics_id },
+      ]);
     } catch (err) {
       setError("메시지 전송에 실패했습니다. 다시 시도해주세요.");
       console.error(err);
@@ -158,8 +166,12 @@ export default function ChatPage() {
               </div>
             </div>
           ) : (
-            messages.map((message) => (
-              <ChatMessageBubble key={message.id} message={message} />
+            messages.map((item) => (
+              <ChatMessageBubble
+                key={item.message.id}
+                message={item.message}
+                analyticsId={item.analyticsId}
+              />
             ))
           )}
 
