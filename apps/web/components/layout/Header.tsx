@@ -38,6 +38,12 @@ export function Header() {
             >
               통계
             </Link>
+            <Link
+              href="/learning"
+              className="text-gray-600 hover:text-gray-900 font-medium"
+            >
+              학습
+            </Link>
             {session && (
               <Link
                 href="/settings"

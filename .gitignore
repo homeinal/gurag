@@ -1,46 +1,41 @@
 # Dependencies
 node_modules/
-.pnpm-store/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
 
-# Next.js
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build outputs
 .next/
 out/
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-.venv/
-venv/
-env/
-.env
+dist/
+build/
+*.egg-info/
 
 # IDE
-.vscode/
 .idea/
+.vscode/
+*.swp
+*.swo
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Build
-dist/
-build/
-
 # Logs
 *.log
 npm-debug.log*
 
-# Testing
-coverage/
-.nyc_output/
-
-# Turbo
-.turbo/
-
-# ChromaDB
+# Database
+*.db
+*.sqlite
 chroma_data/
 
-# Environment
-.env.local
-.env.*.local
+# Misc
+.turbo/
+coverage/

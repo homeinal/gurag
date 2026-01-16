@@ -169,3 +169,67 @@ export async function submitFeedback(analyticsId: string, feedback: 1 | -1): Pro
   });
   if (!response.ok) throw new Error("Failed to submit feedback");
 }
+
+// Learning API (Phase 4)
+export interface LearningStats {
+  cache: {
+    total_entries: number;
+    total_hits: number;
+    expired_entries: number;
+  };
+  improvement_candidates: number;
+  last_learning_run: string | null;
+  is_running: boolean;
+}
+
+export interface LearningStatus {
+  is_running: boolean;
+  last_run: string | null;
+  last_result: {
+    started_at?: string;
+    completed_at?: string;
+    pre_warming?: { total_popular: number; warmed: number; skipped: number; errors: number };
+    response_improvement?: { total_negative: number; improved: number; errors: number };
+    cache_cleanup?: { deleted: number; cutoff_date: string };
+  } | null;
+}
+
+export async function getLearningStats(): Promise<LearningStats> {
+  const response = await fetchWithTimeout(`${API_URL}/api/learning/stats`);
+  if (!response.ok) throw new Error("Failed to fetch learning stats");
+  return response.json();
+}
+
+export async function getLearningStatus(): Promise<LearningStatus> {
+  const response = await fetchWithTimeout(`${API_URL}/api/learning/status`);
+  if (!response.ok) throw new Error("Failed to fetch learning status");
+  return response.json();
+}
+
+export async function triggerLearningCycle(): Promise<{ task_id: string; status: string; message: string }> {
+  const response = await fetchWithTimeout(`${API_URL}/api/learning/run`, {
+    method: "POST",
+  });
+  if (!response.ok) throw new Error("Failed to trigger learning cycle");
+  return response.json();
+}
+
+export async function preWarmCache(days: number = 7, minCount: number = 3, limit: number = 20): Promise<any> {
+  const response = await fetchWithTimeout(`${API_URL}/api/learning/pre-warm`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ days, min_count: minCount, limit }),
+  });
+  if (!response.ok) throw new Error("Failed to pre-warm cache");
+  return response.json();
+}
+
+export async function cleanupCache(maxAgeDays: number = 30, minHitCount: number = 0): Promise<any> {
+  const response = await fetchWithTimeout(`${API_URL}/api/learning/cleanup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ max_age_days: maxAgeDays, min_hit_count: minHitCount }),
+  });
+  if (!response.ok) throw new Error("Failed to cleanup cache");
+  return response.json();
+}

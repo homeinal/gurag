@@ -14,12 +14,16 @@ class Settings(BaseSettings):
     # ChromaDB
     chroma_persist_directory: str = "./chroma_data"
     chroma_collection_name: str = "ai_documents"
+    chroma_in_memory: bool = False  # Render free tier는 True로 설정
 
     # Cache
     cache_ttl_hours: int = 24
 
     # CORS
     allowed_origins: str = "http://localhost:3000"
+
+    # Environment
+    environment: str = "development"  # production, development
 
     class Config:
         env_file = ".env"

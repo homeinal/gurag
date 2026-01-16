@@ -4,14 +4,24 @@ from app.config import get_settings
 
 settings = get_settings()
 
-# ChromaDB 클라이언트 (영구 저장소)
-chroma_client = chromadb.PersistentClient(
-    path=settings.chroma_persist_directory,
-    settings=Settings(
-        anonymized_telemetry=False,
-        allow_reset=True,
-    ),
-)
+# ChromaDB 클라이언트 설정
+# Render free tier는 in-memory 모드 사용 (ephemeral filesystem)
+if settings.chroma_in_memory or settings.environment == "production":
+    chroma_client = chromadb.Client(
+        settings=Settings(
+            anonymized_telemetry=False,
+            allow_reset=True,
+        ),
+    )
+else:
+    # 로컬 개발 환경은 영구 저장소 사용
+    chroma_client = chromadb.PersistentClient(
+        path=settings.chroma_persist_directory,
+        settings=Settings(
+            anonymized_telemetry=False,
+            allow_reset=True,
+        ),
+    )
 
 
 def get_collection():
