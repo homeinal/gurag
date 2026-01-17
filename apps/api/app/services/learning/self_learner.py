@@ -13,7 +13,7 @@ from sqlalchemy import select, func, and_, desc, update
 
 from app.models.db_models import QueryAnalytics, QueryCache
 from app.services.analytics.logger import get_popular_queries, get_negative_feedback_queries
-from app.services.cache.exact_match import save_to_cache, get_cached_response, invalidate_cache, generate_query_hash
+from app.services.cache.semantic_cache import save_to_cache, get_cached_response, invalidate_cache, generate_query_hash
 from app.services.rag.retriever import retrieve_documents, format_context
 from app.services.llm.openai_client import generate_response
 from app.services.router.llm_router import classify_query, QueryType

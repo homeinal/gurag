@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.pool import NullPool
+from sqlalchemy import text
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 import ssl
 from app.config import get_settings
@@ -60,8 +61,10 @@ async_session_maker = async_sessionmaker(
 
 
 async def init_db():
-    """데이터베이스 테이블 생성"""
+    """데이터베이스 테이블 생성 및 pgvector 익스텐션 활성화"""
     async with engine.begin() as conn:
+        # pgvector 익스텐션 활성화 (Neon은 기본 지원)
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
         await conn.run_sync(Base.metadata.create_all)
 
 

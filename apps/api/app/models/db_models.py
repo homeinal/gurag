@@ -1,9 +1,13 @@
 from sqlalchemy import Column, String, Text, DateTime, ForeignKey, Table, Integer, Float
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.sql import func
+from pgvector.sqlalchemy import Vector
 import uuid
 
 Base = declarative_base()
+
+# OpenAI text-embedding-3-small 차원
+EMBEDDING_DIMENSION = 1536
 
 
 def generate_uuid():
@@ -70,6 +74,7 @@ class QueryCache(Base):
     id = Column(String, primary_key=True, default=generate_uuid)
     query_hash = Column(String, unique=True, nullable=False, index=True)
     query_text = Column(Text, nullable=False)
+    query_embedding = Column(Vector(EMBEDDING_DIMENSION), nullable=True)  # Semantic cache용 임베딩
     response = Column(Text, nullable=False)
     sources = Column(Text, nullable=True)  # JSON string
     created_at = Column(DateTime(timezone=True), server_default=func.now())

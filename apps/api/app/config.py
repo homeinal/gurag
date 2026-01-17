@@ -18,6 +18,8 @@ class Settings(BaseSettings):
 
     # Cache
     cache_ttl_hours: int = 24
+    semantic_cache_threshold: float = 0.92  # 코사인 유사도 임계값
+    semantic_cache_enabled: bool = True  # Semantic cache 활성화 여부
 
     # CORS
     allowed_origins: str = "http://localhost:3000"

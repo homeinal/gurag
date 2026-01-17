@@ -7,7 +7,7 @@ from typing import List, Dict, Any
 
 from app.db.neon import get_db
 from app.models.schemas import ChatRequest, ChatResponse, ChatMessageResponse, ChatSource
-from app.services.cache.exact_match import get_cached_response, save_to_cache
+from app.services.cache.semantic_cache import get_cached_response, save_to_cache
 from app.services.rag.retriever import retrieve_documents, format_context
 from app.services.llm.openai_client import generate_response
 from app.services.rag.embedder import get_document_count
