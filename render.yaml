@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: ai-learning-tracker-api
+    name: gurag
     runtime: python
     region: oregon
     plan: free
@@ -17,7 +17,7 @@ services:
       - key: GOOGLE_CLIENT_SECRET
         sync: false
       - key: ALLOWED_ORIGINS
-        value: https://ai-learning-tracker.vercel.app,https://gurag.vercel.app,http://localhost:3000
+        value: https://gurag.vercel.app,http://localhost:3000
       - key: CACHE_TTL_HOURS
         value: "24"
       - key: ENVIRONMENT
